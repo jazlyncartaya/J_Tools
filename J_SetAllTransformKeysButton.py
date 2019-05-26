@@ -1,5 +1,5 @@
-# J_SetAllTransformKeys Button 1.0
-# Copyright (c) 2018 Jazlyn Cartaya.  All Rights Reserved.
+# J_SetAllTransformKeys Button v.1.0.1
+# Copyright (c) 2019 Jazlyn Cartaya.  All Rights Reserved.
 # Add to menu.py
 #import nuke
 
@@ -79,14 +79,18 @@ def set_all_transform_keys():
     center_knob.setAnimated(view='right')
     center_knob.setValue(input_amount_center)
 
-def set_keys_in_knobs():
-    """This function creates a button in Transform node
+    def transform_tab():
+    """This function creates a tab/button in Transform node
     which executes the set_all_transform_keys() function."""
+
+    node = nuke.thisNode()
+
+    tab = nuke.Tab_Knob('Set Keys')
+    node.addKnob(tab)
 
     pyknob = nuke.PyScript_Knob('set_all_transform_keys',
                                 'set all keys',
                                 'set_all_transform_keys()')
-    node = nuke.thisNode()
     node.addKnob(pyknob)
 
-nuke.addOnCreate(lambda: set_keys_in_knobs(), nodeClass='Transform')
+nuke.addOnCreate(lambda: transform_tab(), nodeClass='Transform')

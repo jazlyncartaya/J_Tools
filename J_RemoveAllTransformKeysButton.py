@@ -1,5 +1,5 @@
-# J_RemoveAllTransformKeys Button 1.0
-# Copyright (c) 2018 Jazlyn Cartaya.  All Rights Reserved.
+# J_RemoveAllTransformKeys Button v.1.0.1
+# Copyright (c) 2019 Jazlyn Cartaya.  All Rights Reserved.
 # Add to menu.py
 #import nuke
 
@@ -47,14 +47,18 @@ def remove_all_transform_keys():
     center_knob = this_node['center']
     center_knob.removeKeyAt(frame)
 
-def remove_keys_in_knobs():
-    """This function creates a button in the Transform node
-    which executes the remove_all_tranform_keys function."""
+def transform_tab():
+    """This function creates a tab/button in Transform node
+    which executes the remove_all_transform_keys() function."""
+
+    node = nuke.thisNode()
+
+    tab = nuke.Tab_Knob('Remove Keys')
+    node.addKnob(tab)
 
     pyknob = nuke.PyScript_Knob('remove_all_transform_keys',
                                 'remove all keys',
                                 'remove_all_transform_keys()')
-    node = nuke.thisNode()
     node.addKnob(pyknob)
 
-nuke.addOnCreate(lambda: remove_keys_in_knobs(), nodeClass='Transform')
+nuke.addOnCreate(lambda: transform_tab(), nodeClass='Transform')
