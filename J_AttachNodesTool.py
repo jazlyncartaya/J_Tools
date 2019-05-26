@@ -1,11 +1,11 @@
-# J_AttachNodes Tool 1.0
+# J_AttachNodes Tool v.1.1.0
 # Copyright (c) 2018 Jazlyn Cartaya.  All Rights Reserved.
 # Add to menu.py
 #import nuke
 # J_AttachNodes Menu
 #nuke.menu('Nuke').addCommand('J_AttachNodes/Attach Nodes',
-                             #'attach_nodes()',
-                             #'ctrl+alt+a')
+                                #'attach_nodes()',
+                                #'ctrl+alt+a')
 
 def attach_nodes():
     """This tool lets the artist select any node in their node graph,
@@ -15,37 +15,63 @@ def attach_nodes():
     # Panel (1): Asks for name of the node you would like to attach.
 
     panel = nuke.Panel('J_AttachNodes')
-    panel.addSingleLineInput('Node to attach:', '')
+    panel.addSingleLineInput('node to attach:', '')
+    panel.addBooleanCheckBox('clone node', False)
     ret = panel.show()
     if not ret:
         pass
 
-    node_name = panel.value('Node to attach:')
+    node_name = panel.value('node to attach:')
     print node_name
+
+    clone_node = panel.value('clone node')
+    print clone_node
 
     # List to keep track of nodes:
     desired_nodes = []
 
         # Attach Node(s):
-
     try:
         selected = nuke.selectedNodes()
-        # Clear user's selection:
-        [node.setSelected(False) for node in selected] # Why is this say
-	                                               # it is assigned
-						       # to nothing?
-        for node in selected:
-            # Select node so createNode correctly inserts it:
-            node.setSelected(True)
-            desired_node = nuke.createNode(node_name)
-            desired_nodes.append(desired_node)
+        [node.setSelected(False) for node in selected] 
+        if clone_node == False:
+            for node in selected:
+                node.setSelected(True)
+                desired_node = nuke.createNode(node_name)
+                desired_nodes.append(desired_node)
 
-            """Now deselect selected node,
+            """Anthony: Now deselect our selected node,
                         and corresponding desired node.
                         This will ensure the next nodes
                         are properly connected."""
             node.setSelected(False)
             desired_node.setSelected(False)
+
+        # Clone Node
+        else:
+            node = selected[0]
+
+            for n in selected:
+                n.setSelected(False)
+
+            node.setSelected(True)
+
+            if node:
+                desired_node = nuke.createNode(node_name)
+                desired_nodes.append(desired_node)
+                desired_node.setSelected(False)
+				
+            del selected[0]
+
+            for n in selected:
+                n.setSelected(True)
+                nuke.clone(desired_node)
+
+            node.setSelected(False)
+            for n in selected:
+                n.setSelected(False)
+            desired_node.setSelected(False)
+
     except RuntimeError:
         pass
 
@@ -58,16 +84,18 @@ def attach_nodes():
         knobs.sort(key=str.lower) # Sort knobs into alphabetical order.
 
         panel = nuke.Panel('Knob')
-        panel.addEnumerationPulldown('Knob (optional):', ' '.join(knobs))
-        panel.addSingleLineInput('Number Value (optional):', 0)
+        panel.addEnumerationPulldown('knob (optional):', ' '.join(knobs))
+        panel.addSingleLineInput('number value (optional):', 0)
         ret = panel.show()
         if not ret:
             pass
-        selected_knob = panel.value('Knob (optional):')
+
+        selected_knob = panel.value('knob (optional):')
         print selected_knob
 
-        input_amount = panel.value('Number Value (optional):')
+        input_amount = panel.value('number value (optional):')
         print input_amount
+
     except UnboundLocalError:
         pass
 
@@ -75,8 +103,6 @@ def attach_nodes():
     # Loop through newly created nodes:
     for node in desired_nodes:
         try:
-            #nuke.selectedNode().knob(selectedKnob).setValue(int(inputAmount))
-            # Node refers to current node in the list.
             node.knob(selected_knob).setValue(int(input_amount))
         except ValueError:
             print nuke.message('The value you entered was not a number.'
